@@ -18,6 +18,21 @@ app.innerHTML = `
       <p class="mb-8 text-slate-500">
         Manage your posts using JSONPlaceholder.
       </p>
+      <div class="mb-6">
+  <label for="user-filter" class="mb-2 block font-medium text-slate-700">
+    Filter by user
+  </label>
+
+  <select
+    id="user-filter"
+    class="w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-700"
+  >
+    <option value="">All users</option>
+    ${Array.from({ length: 10 }, (_, index) => `
+      <option value="${index + 1}">User ${index + 1}</option>
+    `).join('')}
+  </select>
+</div>
 
       <section id="posts-container" class="space-y-4">
       </section>
@@ -26,7 +41,7 @@ app.innerHTML = `
 `
 
 const postsContainer = document.querySelector('#posts-container')
-
+const userFilter = document.querySelector('#user-filter')
 function renderPosts() {
   if (isLoading) {
     postsContainer.innerHTML = `
@@ -63,6 +78,7 @@ function renderPosts() {
       <p class="text-slate-600">
         ${escapeHTML(post.body)}
       </p>
+
     </article>
   `).join('')
 }
@@ -77,13 +93,21 @@ function escapeHTML(value) {
   })[character])
 }
 
-async function loadPosts() {
+async function loadPosts(userId = '') {
   isLoading = true
   errorMessage = ''
   renderPosts()
 
   try {
-    posts = await api.get('/posts?_limit=10')
+  const params = new URLSearchParams()
+
+if (userId) {
+  params.append('userId', userId)
+} else {
+  params.append('_limit', '10')
+}
+
+posts = await api.get(`/posts?${params}`)
   } catch (error) {
     errorMessage = error.message || 'Something went wrong.'
   } finally {
@@ -93,3 +117,8 @@ async function loadPosts() {
 }
 
 loadPosts()
+userFilter.addEventListener('change', () => {
+  const userId = userFilter.value
+
+  loadPosts(userId)
+})
