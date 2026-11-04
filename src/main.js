@@ -65,8 +65,7 @@ app.innerHTML = `
 
   <button
     type="submit"
-    class="rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white hover:bg-indigo-700"
-  >
+    class="rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white hover:bg-indigo-700">
     Create Post
   </button>
 </form>
@@ -111,15 +110,21 @@ function renderPosts() {
   }
 
   postsContainer.innerHTML = posts.map(post => `
-    <article class="rounded-xl bg-white p-6 shadow-sm">
-      <h2 class="mb-2 text-lg font-semibold text-slate-800">
-        ${escapeHTML(post.title)}
-      </h2>
-      <p class="text-slate-600">
-        ${escapeHTML(post.body)}
-      </p>
+   <article class="rounded-xl bg-white p-6 shadow-sm">
+  <h2 class="mb-2 text-lg font-semibold text-slate-800">
+    ${escapeHTML(post.title)}
+  </h2>
 
-    </article>
+  <p class="mb-4 text-slate-600">
+    ${escapeHTML(post.body)}
+  </p>
+
+  <button
+    class="edit-btn rounded-lg bg-amber-500 px-4 py-2 text-white hover:bg-amber-600"
+    data-id="${post.id}" >
+    Edit
+  </button>
+</article>
   `).join('')
 }
 
@@ -182,5 +187,33 @@ postForm.addEventListener('submit', async (event) => {
     postForm.reset()
   } catch (error) {
     alert(error.message || 'Failed to create post.')
+  }
+})
+
+postsContainer.addEventListener('click', async (event) => {
+  if (event.target.classList.contains('edit-btn')) {
+    const postId = Number(event.target.dataset.id)
+
+    const post = posts.find(post => post.id === postId)
+
+    const newTitle = prompt('Enter the new post title:', post.title)
+
+    if (!newTitle || !newTitle.trim()) return
+
+    try {
+      const updatedPost = await api.patch(`/posts/${postId}`, {
+        title: newTitle.trim(),
+      })
+
+      posts = posts.map(post =>
+        post.id === postId
+          ? { ...post, title: updatedPost.title }
+          : post
+      )
+
+      renderPosts()
+    } catch (error) {
+      alert(error.message || 'Failed to update post.')
+    }
   }
 })
