@@ -25,14 +25,51 @@ app.innerHTML = `
 
   <select
     id="user-filter"
-    class="w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-700"
-  >
+    class="w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-700">
     <option value="">All users</option>
     ${Array.from({ length: 10 }, (_, index) => `
       <option value="${index + 1}">User ${index + 1}</option>
     `).join('')}
   </select>
 </div>
+
+<form id="post-form" class="mb-8 rounded-xl bg-white p-6 shadow-sm">
+  <h2 class="mb-4 text-xl font-bold text-slate-800">
+    Create New Post
+  </h2>
+
+  <div class="mb-4">
+    <label for="post-title" class="mb-2 block font-medium text-slate-700">
+      Title
+    </label>
+    <input
+      type="text"
+      id="post-title"
+      required
+      placeholder="Enter post title"
+      class="w-full rounded-lg border border-slate-300 p-3"
+    />
+  </div>
+
+  <div class="mb-4">
+    <label for="post-body" class="mb-2 block font-medium text-slate-700">
+      Description
+    </label>
+    <textarea
+      id="post-body"
+      required
+      placeholder="Write your post..."
+      class="w-full rounded-lg border border-slate-300 p-3"
+    ></textarea>
+  </div>
+
+  <button
+    type="submit"
+    class="rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white hover:bg-indigo-700"
+  >
+    Create Post
+  </button>
+</form>
 
       <section id="posts-container" class="space-y-4">
       </section>
@@ -42,6 +79,9 @@ app.innerHTML = `
 
 const postsContainer = document.querySelector('#posts-container')
 const userFilter = document.querySelector('#user-filter')
+const postForm = document.querySelector('#post-form')
+const titleInput = document.querySelector('#post-title')
+const bodyInput = document.querySelector('#post-body')
 function renderPosts() {
   if (isLoading) {
     postsContainer.innerHTML = `
@@ -121,4 +161,26 @@ userFilter.addEventListener('change', () => {
   const userId = userFilter.value
 
   loadPosts(userId)
+})
+
+postForm.addEventListener('submit', async (event) => {
+  event.preventDefault()
+
+  const newPost = {
+    title: titleInput.value.trim(),
+    body: bodyInput.value.trim(),
+    userId: 1,
+  }
+
+  try {
+    const createdPost = await api.post('/posts', newPost)
+
+    posts.unshift(createdPost)
+
+    renderPosts()
+
+    postForm.reset()
+  } catch (error) {
+    alert(error.message || 'Failed to create post.')
+  }
 })
