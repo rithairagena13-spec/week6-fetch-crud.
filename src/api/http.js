@@ -39,3 +39,16 @@ export async function request(
 
   return data
 }
+
+export const api = {
+  get: (path, opts) => request(path, opts),
+
+  post: (path, body) =>
+    request(path, { method: 'POST', body }),
+
+  patch: (path, body) =>
+    request(path, { method: 'PATCH', body }),
+
+  del: (path) =>
+    request(path, { method: 'DELETE' }),
+}
