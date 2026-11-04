@@ -124,6 +124,11 @@ function renderPosts() {
     data-id="${post.id}" >
     Edit
   </button>
+ <button
+  class="delete-btn rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+  data-id="${post.id}">
+  Delete
+</button>
 </article>
   `).join('')
 }
@@ -214,6 +219,23 @@ postsContainer.addEventListener('click', async (event) => {
       renderPosts()
     } catch (error) {
       alert(error.message || 'Failed to update post.')
+    }
+  }
+    if (event.target.classList.contains('delete-btn')) {
+    const postId = Number(event.target.dataset.id)
+
+    const confirmed = confirm('Are you sure you want to delete this post?')
+
+    if (!confirmed) return
+
+    try {
+      await api.del(`/posts/${postId}`)
+
+      posts = posts.filter(post => post.id !== postId)
+
+      renderPosts()
+    } catch (error) {
+      alert(error.message || 'Failed to delete post.')
     }
   }
 })
